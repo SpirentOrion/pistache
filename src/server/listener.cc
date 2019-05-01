@@ -235,9 +235,11 @@ Listener::getPort() const {
 }
 
 void
-Listener::run() {
+Listener::run(std::promise<void>& promise) {
     shutdownFd.bind(poller);
     reactor_.run();
+
+    promise.set_value();
 
     for (;;) {
         std::vector<Polling::Event> events;
@@ -271,8 +273,8 @@ Listener::run() {
 }
 
 void
-Listener::runThreaded() {
-    acceptThread = std::thread([=]() { this->run(); });
+Listener::runThreaded(std::promise<void>& promise) {
+    acceptThread = std::thread([=, &promise]() { this->run(promise); });
 }
 
 void

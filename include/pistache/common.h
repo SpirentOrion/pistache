@@ -62,6 +62,7 @@ namespace Const {
     static constexpr size_t MaxEvents  = 1024;
     static constexpr size_t MaxBuffer  = 4096;
     static constexpr size_t DefaultWorkers = 1;
+    static constexpr size_t MaxServeStartTime = 5;
 
     // Defined from CMakeLists.txt in project root
     static constexpr size_t DefaultMaxPayload = 4096;

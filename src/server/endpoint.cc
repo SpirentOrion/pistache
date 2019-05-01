@@ -74,13 +74,40 @@ Endpoint::bind(const Address& addr) {
 void
 Endpoint::serve()
 {
-    serveImpl(&Tcp::Listener::run);
+    std::promise<void> promise;
+    serve(promise);
 }
 
 void
 Endpoint::serveThreaded()
 {
-    serveImpl(&Tcp::Listener::runThreaded);
+    std::promise<void> promise;
+    auto future = promise.get_future();
+
+    serveThreaded(promise);
+
+    auto status = future.wait_for(std::chrono::seconds(Const::MaxServeStartTime));
+    switch(status) {
+        case std::future_status::ready:
+            break;
+        case std::future_status::timeout:
+            throw std::runtime_error("Endpoint server failed to start within timeout period.");
+            break;
+        case std::future_status::deferred:
+            break;
+    }
+}
+
+void
+Endpoint::serve(std::promise<void>& promise)
+{
+    serveImpl(&Tcp::Listener::run, promise);
+}
+
+void
+Endpoint::serveThreaded(std::promise<void>& promise)
+{
+    serveImpl(&Tcp::Listener::runThreaded, promise);
 }
 
 void

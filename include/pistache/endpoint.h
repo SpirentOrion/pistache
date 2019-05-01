@@ -10,6 +10,8 @@
 #include <pistache/net.h>
 #include <pistache/http.h>
 
+#include <future>
+
 namespace Pistache {
 namespace Http {
 
@@ -47,6 +49,9 @@ public:
     void serve();
     void serveThreaded();
 
+    void serve(std::promise<void>& promise);
+    void serveThreaded(std::promise<void>& promise);
+
     void shutdown();
 
     bool isBound() const {
@@ -63,17 +68,17 @@ public:
 
 private:
 
-    template<typename Method>
-    void serveImpl(Method method)
+    template<typename Method, typename Argument>
+    void serveImpl(Method method, Argument& argument)
     {
-#define CALL_MEMBER_FN(obj, pmf)  ((obj).*(pmf))
+#define CALL_MEMBER_FN(obj, pmf,arg)  (((obj).*(pmf))(arg))
         if (!handler_)
             throw std::runtime_error("Must call setHandler() prior to serve()");
 
         listener.setHandler(handler_);
         listener.bind();
 
-        CALL_MEMBER_FN(listener, method)();
+        CALL_MEMBER_FN(listener, method, argument);
 #undef CALL_MEMBER_FN
     }
 

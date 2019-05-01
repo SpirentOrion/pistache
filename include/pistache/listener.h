@@ -9,6 +9,7 @@
 #include <vector>
 #include <memory>
 #include <thread>
+#include <future>
 
 #include <sys/resource.h>
 
@@ -55,8 +56,8 @@ public:
     bool isBound() const;
     Port getPort() const;
 
-    void run();
-    void runThreaded();
+    void run(std::promise<void>& promise);
+    void runThreaded(std::promise<void>& promise);
 
     void shutdown();
 
@@ -67,8 +68,8 @@ public:
 
     void pinWorker(size_t worker, const CpuSet& set);
 
-private: 
-    Address addr_; 
+private:
+    Address addr_;
     int listen_fd;
     int backlog_;
     NotifyFd shutdownFd;
